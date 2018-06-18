@@ -1,7 +1,6 @@
 package com.udacity.sandwichclub.adapter;
 
 import android.annotation.SuppressLint;
-import android.graphics.Color;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -10,14 +9,13 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.udacity.sandwichclub.R;
-import com.udacity.sandwichclub.model.Ingredient;
 
 import java.util.List;
 
 public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.Holder> {
-    private List<Ingredient> ingredients;
+    private List<String> ingredients;
 
-    public IngredientAdapter(List<Ingredient> ingredients) {
+    public IngredientAdapter(List<String> ingredients) {
         this.ingredients = ingredients;
     }
 
@@ -34,23 +32,10 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.Ho
     @SuppressLint("DefaultLocale")
     @Override
     public void onBindViewHolder(@NonNull Holder holder, int position) {
-        Ingredient ingredient = ingredients.get(position);
-        if (position == 0) {
-            holder.labelTV.setTextColor(Color.parseColor("#64DD17"));
-            holder.quantityTV.setTextColor(Color.parseColor("#64DD17"));
-        } else if (position == 1) {
-            holder.labelTV.setTextColor(Color.parseColor("#D50000"));
-            holder.quantityTV.setTextColor(Color.parseColor("#D50000"));
-        }
+        String ingredient = ingredients.get(position);
 
         if (ingredient != null) {
-            if (ingredient.getLabel() != null) {
-                holder.labelTV.setText(ingredient.getLabel());
-            }
-
-            if (ingredient.getUnit() != null) {
-                holder.quantityTV.setText(String.format("%.2f %s", ingredient.getQuantity(), ingredient.getUnit()));
-            }
+            holder.labelTV.setText(ingredient);
         }
     }
 
@@ -61,13 +46,10 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.Ho
 
     class Holder extends RecyclerView.ViewHolder {
         final TextView labelTV;
-        final TextView quantityTV;
 
         Holder(View itemView) {
             super(itemView);
-
             labelTV = itemView.findViewById(R.id.label_tv);
-            quantityTV = itemView.findViewById(R.id.quantity_tv);
         }
     }
 }

@@ -9,8 +9,7 @@ public class Sandwich {
     private String placeOfOrigin;
     private String description;
     private String image;
-    private List<Ingredient> ingredients = null;
-    private String url;
+    private List<String> ingredients = null;
 
     /**
      * No args constructor for use in serialization
@@ -58,19 +57,11 @@ public class Sandwich {
         this.image = image;
     }
 
-    public List<Ingredient> getIngredients() {
+    public List<String> getIngredients() {
         return ingredients;
     }
 
-    public void setIngredients(List<Ingredient> ingredients) {
+    public void setIngredients(List<String> ingredients) {
         this.ingredients = ingredients;
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
-    public void setUrl(String url) {
-        this.url = url;
     }
 }

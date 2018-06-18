@@ -11,13 +11,11 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.google.gson.Gson;
 import com.squareup.picasso.Picasso;
 import com.udacity.sandwichclub.DetailActivity;
 import com.udacity.sandwichclub.R;
 import com.udacity.sandwichclub.model.Sandwich;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class SandwichAdapter extends RecyclerView.Adapter<SandwichAdapter.SandwichHolder> {
@@ -50,31 +48,20 @@ public class SandwichAdapter extends RecyclerView.Adapter<SandwichAdapter.Sandwi
                 holder.mainNameTV.setText(sandwich.getMainName());
             }
 
+            final int i = position;
             holder.view.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    launchDetailActivity(sandwich);
+                    launchDetailActivity(i);
                 }
             });
         }
     }
 
     @SuppressLint("DefaultLocale")
-    private void launchDetailActivity(Sandwich sandwich) {
-        Gson gson = new Gson();
-        String JSONIngredients = gson.toJson(sandwich.getIngredients());
-
+    private void launchDetailActivity(int position) {
         Intent intent = new Intent(context, DetailActivity.class);
-
-        intent.putExtra(DetailActivity.MAIN_NAME_KEY, sandwich.getMainName());
-        String a[] = {};
-        intent.putExtra(DetailActivity.ALSO_KNOWN_AS_KEY, sandwich.getAlsoKnownAs().toArray(a));
-        intent.putExtra(DetailActivity.PLACE_OF_ORIGIN_KEY, sandwich.getPlaceOfOrigin());
-        intent.putExtra(DetailActivity.DESCRIPTION_KEY, sandwich.getDescription());
-        intent.putExtra(DetailActivity.IMAGE_KEY, sandwich.getImage());
-        intent.putExtra(DetailActivity.INGREDIENTS_KEY, JSONIngredients);
-        intent.putExtra(DetailActivity.URL_KEY, sandwich.getUrl());
-
+        intent.putExtra(DetailActivity.EXTRA_POSITION, position);
         context.startActivity(intent);
     }
 
@@ -83,10 +70,6 @@ public class SandwichAdapter extends RecyclerView.Adapter<SandwichAdapter.Sandwi
         return sandwiches.size();
     }
 
-    public void addData(ArrayList<Sandwich> sandwiches) {
-        this.sandwiches.addAll(sandwiches);
-        notifyDataSetChanged();
-    }
 
     class SandwichHolder extends RecyclerView.ViewHolder {
         final ImageView imageIV;

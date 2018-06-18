@@ -16,7 +16,8 @@
     </style>
 
     <style name="detail_tv">
-        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_marginBottom">@dimen/dp16</item>
+        <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:fontFamily">monospace</item>
         <item name="android:textColor">@color/ingredient_text_color</item>

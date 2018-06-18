@@ -1,6 +1,9 @@
 package com.udacity.sandwichclub.utils;
 
-import com.udacity.sandwichclub.model.Ingredient;
+import android.content.Context;
+import android.util.Log;
+
+import com.udacity.sandwichclub.R;
 import com.udacity.sandwichclub.model.Sandwich;
 
 import org.json.JSONArray;
@@ -8,135 +11,84 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.List;
 
 public class JsonUtils {
-    private static final String HITS_KEY = "hits";
-    private static final String RECIPE_KEY = "recipe";
+    private static final String NAME = "name";
+    private static final String MAIN_NAME = "mainName";
+    private static final String ALSO_KNOWN_AS = "alsoKnownAs";
+    private static final String PLACE_OF_ORIGIN = "placeOfOrigin";
+    private static final String DESCRIPTION = "description";
+    private static final String IMAGE = "image";
+    private static final String INGREDIENTS = "ingredients";
 
-    private static final String LABEL_KEY = "label";
-    private static final String IMAGE_KEY = "image";
-    private static final String SOURCE_KEY = "source";
-    private static final String URL_KEY = "url";
-    private static final String HEALTH_LABELS_KEY = "healthLabels";
-    private static final String INGREDIENT_LINES_KEY = "ingredientLines";
-    private static final String TOTAL_NUTRIENTS_KEY = "totalNutrients";
+    private static final String TAG = JsonUtils.class.getSimpleName();
 
-    private static final String QUANTITY_KEY = "quantity";
-    private static final String UNIT_KEY = "unit";
 
-    public static ArrayList<Sandwich> parseSandwichJson(String json) throws JSONException {
-        ArrayList<Sandwich> sandwiches = null;
-
-        if (json != null) {
-            JSONObject root = new JSONObject(json);
-
-            if (root.has(HITS_KEY)) {
-                sandwiches = parseHist(root.getJSONArray(HITS_KEY));
-            }
-        }
-
-        return sandwiches;
-    }
-
-    private static ArrayList<Sandwich> parseHist(JSONArray hits) throws JSONException {
+    public static ArrayList<Sandwich> parseSandwichesJson(Context context) throws JSONException {
         ArrayList<Sandwich> sandwiches = new ArrayList<>();
+        String[] jsonSandwiches = context.getResources().getStringArray(R.array.sandwich_details);
 
-        for (int i = 0; i < hits.length(); i++) {
-            sandwiches.add(parseSandwich(hits.getJSONObject(i)));
+        for (int i = 0; i < jsonSandwiches.length; i++) {
+            sandwiches.add(parseSandwichJson(jsonSandwiches[i]));
+            Log.v(TAG, String.format("json for item number %d : %s", i, jsonSandwiches[i]));
         }
-
         return sandwiches;
     }
 
-    private static Sandwich parseSandwich(JSONObject sandwichJO) throws JSONException {
-        Sandwich sandwich = null;
-
-        if (sandwichJO.has(RECIPE_KEY)) {
-            sandwich = parseRecipe(sandwichJO.getJSONObject(RECIPE_KEY));
-        }
-        return sandwich;
-    }
-
-    private static Sandwich parseRecipe(JSONObject recipe) throws JSONException {
-
+    public static Sandwich parseSandwichJson(String json) throws JSONException {
         Sandwich sandwich = new Sandwich();
-        if (recipe.has(LABEL_KEY)) {
-            sandwich.setMainName(recipe.getString(LABEL_KEY));
+        JSONObject root = new JSONObject(json);
+
+        if (root.has(NAME)) {
+            parseName(root.getJSONObject(NAME), sandwich);
         }
 
-        if (recipe.has(HEALTH_LABELS_KEY)) {
-            ArrayList<String> alsoKnownAs = new ArrayList<>();
-            JSONArray healthLabels = recipe.getJSONArray(HEALTH_LABELS_KEY);
-
-            for (int i = 0; i < healthLabels.length(); i++) {
-                alsoKnownAs.add(healthLabels.getString(i));
-            }
-
-            sandwich.setAlsoKnownAs(alsoKnownAs);
+        if (root.has(PLACE_OF_ORIGIN)) {
+            sandwich.setPlaceOfOrigin(root.getString(PLACE_OF_ORIGIN));
         }
 
-        if (recipe.has(SOURCE_KEY)) {
-            sandwich.setPlaceOfOrigin(recipe.getString(SOURCE_KEY));
+        if (root.has(DESCRIPTION)) {
+            sandwich.setDescription(root.getString(DESCRIPTION));
         }
 
-        if (recipe.has(INGREDIENT_LINES_KEY)) {
-            StringBuilder description = new StringBuilder();
-            JSONArray ingredientLines = recipe.getJSONArray(INGREDIENT_LINES_KEY);
-            for (int i = 0; i < ingredientLines.length(); i++) {
-                description.append("").append(ingredientLines.get(i)).append("\n\n");
-
-            }
-            sandwich.setDescription(description.toString());
+        if (root.has(IMAGE)) {
+            sandwich.setImage(root.getString(IMAGE));
         }
 
-        if (recipe.has(IMAGE_KEY)) {
-            sandwich.setImage(recipe.getString(IMAGE_KEY));
-        }
-
-        if (recipe.has(URL_KEY)) {
-            sandwich.setUrl(recipe.getString(URL_KEY));
-        }
-
-        if (recipe.has(TOTAL_NUTRIENTS_KEY)) {
-            sandwich.setIngredients(parseTotalNutrients(recipe.getJSONObject(TOTAL_NUTRIENTS_KEY)));
+        if (root.has(INGREDIENTS)) {
+            sandwich.setIngredients(parseIngredient(root.getJSONArray(INGREDIENTS)));
         }
 
         return sandwich;
     }
 
-    private static ArrayList<Ingredient> parseTotalNutrients(JSONObject ingredientsJSON) throws JSONException {
-        ArrayList<Ingredient> ingredients = new ArrayList<>();
+    private static void parseName(JSONObject nameJO, Sandwich sandwich) throws JSONException {
 
-        Iterator<String> keys = ingredientsJSON.keys();
-        while (keys.hasNext()) {
-            ingredients.add(parseIngredient(ingredientsJSON.getJSONObject(keys.next())));
+        if (nameJO.has(MAIN_NAME)) {
+            sandwich.setMainName(nameJO.getString(MAIN_NAME));
+        }
+
+        if (nameJO.has(ALSO_KNOWN_AS)) {
+            sandwich.setAlsoKnownAs(parseAlsoKnownAs(nameJO.getJSONArray(ALSO_KNOWN_AS)));
+        }
+    }
+
+    private static List<String> parseAlsoKnownAs(JSONArray alsoKnownAsJA) throws JSONException {
+        List<String> alsoKnownAs = new ArrayList<>();
+        for (int i = 0; i < alsoKnownAsJA.length(); i++) {
+            alsoKnownAs.add(alsoKnownAsJA.getString(i));
+        }
+        return alsoKnownAs;
+    }
+
+    private static List<String> parseIngredient(JSONArray ingredientJA) throws JSONException {
+        List<String> ingredients = new ArrayList<>();
+
+        for (int i = 0; i < ingredientJA.length(); i++) {
+            ingredients.add(ingredientJA.getString(i));
         }
 
         return ingredients;
     }
-
-    private static Ingredient parseIngredient(JSONObject ingredientJSON) throws JSONException {
-        Ingredient ingredient = new Ingredient();
-
-        if (ingredientJSON.has(LABEL_KEY)) {
-            ingredient.setLabel(ingredientJSON.getString(LABEL_KEY));
-        }
-        if (ingredientJSON.has(QUANTITY_KEY)) {
-            try {
-                ingredient.setQuantity(Double.parseDouble(ingredientJSON.getString(QUANTITY_KEY)));
-
-            } catch (NumberFormatException e) {
-                e.printStackTrace();
-            }
-        }
-
-        if (ingredientJSON.has(UNIT_KEY)) {
-            ingredient.setUnit(ingredientJSON.getString(UNIT_KEY));
-        }
-
-        return ingredient;
-    }
-
-
 }

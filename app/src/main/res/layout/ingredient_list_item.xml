@@ -11,25 +11,10 @@
     android:paddingRight="@dimen/dp16"
     android:paddingTop="@dimen/dp24">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/dp16">
-
-        <TextView
-            android:id="@+id/label_tv"
-            style="@style/detail_tv"
-            android:layout_weight="1"
-            tools:text="FAT" />
-
-        <TextView
-            android:id="@+id/quantity_tv"
-            style="@style/detail_tv"
-            android:layout_weight="1"
-            android:gravity="end"
-            tools:text="14.23 kcal" />
-
-    </LinearLayout>
+    <TextView
+        android:id="@+id/label_tv"
+        style="@style/detail_tv"
+        tools:text="FAT" />
 
     <View
         android:layout_width="match_parent"

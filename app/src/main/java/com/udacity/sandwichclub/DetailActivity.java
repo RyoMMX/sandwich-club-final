@@ -2,38 +2,29 @@ package com.udacity.sandwichclub;
 
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.view.View;
+import android.webkit.URLUtil;
 import android.widget.Toast;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.squareup.picasso.Picasso;
 import com.udacity.sandwichclub.adapter.IngredientAdapter;
 import com.udacity.sandwichclub.databinding.ActivityDetailBinding;
-import com.udacity.sandwichclub.model.Ingredient;
+import com.udacity.sandwichclub.model.Sandwich;
+import com.udacity.sandwichclub.utils.JsonUtils;
 
-import java.lang.reflect.Type;
-import java.util.ArrayList;
+import org.json.JSONException;
+
 import java.util.List;
 
 public class DetailActivity extends AppCompatActivity {
-    public static final String MAIN_NAME_KEY = "mainName";
-    public static final String ALSO_KNOWN_AS_KEY = "alsoKnownAs";
-    public static final String PLACE_OF_ORIGIN_KEY = "placeOfOrigin";
-    public static final String DESCRIPTION_KEY = "description";
-    public static final String IMAGE_KEY = "image";
-    public static final String INGREDIENTS_KEY = "ingredients";
-    public static final String URL_KEY = "url";
-
+    public static final String EXTRA_POSITION = "extra_position";
+    private static final int DEFAULT_POSITION = -1;
     private static final String TAG = DetailActivity.class.getSimpleName();
-
     private ActivityDetailBinding binding;
 
 
@@ -47,77 +38,68 @@ public class DetailActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
-        populateUI();
-    }
-
-    private void populateUI() {
-        Intent intent = getIntent();
-        if (intent != null) {
-
-            String mainName = intent.getStringExtra(MAIN_NAME_KEY);
-            String[] alsoKnownAs = intent.getStringArrayExtra(ALSO_KNOWN_AS_KEY);
-            String placeOfOrigin = intent.getStringExtra(PLACE_OF_ORIGIN_KEY);
-            String description = intent.getStringExtra(DESCRIPTION_KEY);
-            String image = intent.getStringExtra(IMAGE_KEY);
-            String JSONIngredients = intent.getStringExtra(INGREDIENTS_KEY);
-            final String url = intent.getStringExtra(URL_KEY);
-
-
-            if (mainName != null) {
-                if (binding.activityDetailContent != null) {
-                    binding.activityDetailContent.mainNameTv.setText(mainName);
-                    binding.collapsingToolbarLayout.setTitle(mainName);
-                }
-            }
-            if (alsoKnownAs != null) {
-                for (String string : alsoKnownAs) {
-                    if (binding.activityDetailContent != null) {
-                        binding.activityDetailContent.alsoKnownTv.append(string + "\n\n");
-                    }
-                }
-            }
-            if (placeOfOrigin != null) {
-                if (binding.activityDetailContent != null) {
-                    binding.activityDetailContent.placeOfOrigin.setText(placeOfOrigin);
-                }
-            }
-            if (description != null) {
-                if (binding.activityDetailContent != null) {
-                    binding.activityDetailContent.descriptionTv.setText(description);
-                }
-            }
-            if (image != null) {
-                Picasso.with(this).load(image).into(binding.imageIv);
-            }
-            if (JSONIngredients != null) {
-                Gson gson = new Gson();
-                Type ingredientListType = new TypeToken<ArrayList<Ingredient>>() {
-                }.getType();
-                List<Ingredient> ingredients = gson.fromJson(JSONIngredients, ingredientListType);
-                Log.v(TAG, "JSON Ingredients" + JSONIngredients);
-                if (ingredients != null) {
-                    setupIngredientRecylerView(ingredients);
-                }
-            }
-            if (url != null) {
-                binding.openUrl.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Intent webIntent = new Intent(Intent.ACTION_VIEW);
-                        webIntent.setData(Uri.parse(url));
-                        startActivity(webIntent);
-                    }
-                });
-            }
-
-        } else {
-            finish();
-            Log.e(TAG, "Intent is null in DetailActivity");
+        try {
+            populateUI();
+        } catch (JSONException e) {
+            e.printStackTrace();
             closeOnError();
         }
     }
 
-    private void setupIngredientRecylerView(List<Ingredient> ingredients) {
+    private void populateUI() throws JSONException {
+        Intent intent = getIntent();
+        if (intent != null) {
+            int postion = intent.getIntExtra(EXTRA_POSITION, DEFAULT_POSITION);
+            String sandwichDetail[] = getResources().getStringArray(R.array.sandwich_details);
+            String json = sandwichDetail[postion];
+            Sandwich sandwich = JsonUtils.parseSandwichJson(json);
+
+            if (sandwich != null) {
+                if (sandwich.getMainName() != null) {
+                    if (binding.activityDetailContent != null) {
+                        binding.activityDetailContent.mainNameTv.setText(sandwich.getMainName());
+                        binding.collapsingToolbarLayout.setTitle(sandwich.getMainName());
+                    }
+                }
+
+
+                if (sandwich.getAlsoKnownAs() != null) {
+                    for (String string : sandwich.getAlsoKnownAs()) {
+                        if (binding.activityDetailContent != null) {
+                            binding.activityDetailContent.alsoKnownTv.append(string + "\n\n");
+                        }
+                    }
+                }
+
+                if (sandwich.getPlaceOfOrigin() != null) {
+                    if (binding.activityDetailContent != null) {
+                        binding.activityDetailContent.placeOfOrigin.setText(sandwich.getPlaceOfOrigin());
+                    }
+                }
+
+                if (sandwich.getDescription() != null) {
+                    if (binding.activityDetailContent != null) {
+                        binding.activityDetailContent.descriptionTv.setText(sandwich.getDescription());
+                    }
+                }
+
+                if (sandwich.getImage() != null) {
+                    if (URLUtil.isHttpsUrl(sandwich.getImage()) || URLUtil.isHttpUrl(sandwich.getImage()))
+                        Picasso.with(this).load(sandwich.getImage()).into(binding.imageIv);
+                }
+
+                if (sandwich.getIngredients() != null) {
+                    setupIngredientRecylerView(sandwich.getIngredients());
+                }
+
+            }
+
+        } else {
+            closeOnError();
+        }
+    }
+
+    private void setupIngredientRecylerView(List<String> ingredients) {
         if (binding.activityDetailContent != null) {
             RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this) {
                 @Override
@@ -135,7 +117,8 @@ public class DetailActivity extends AppCompatActivity {
     }
 
     private void closeOnError() {
-        finish();
+        Log.e(TAG, "Intent is null in DetailActivity");
         Toast.makeText(this, R.string.detail_error_message, Toast.LENGTH_SHORT).show();
+        finish();
     }
 }
